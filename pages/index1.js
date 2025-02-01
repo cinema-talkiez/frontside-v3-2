@@ -27,11 +27,31 @@ import { IoClose } from "react-icons/io5";
 import { BiSearch } from "react-icons/bi";
 import { FaHome, FaSearch, FaTv, FaPlay, FaBars } from "react-icons/fa";
 
+import { getItem, removeItem } from "@/utils/db";
+import Logout from "@/components/Logout";
 
 
 
 export default function Home() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const loggedIn = await getItem("loggedIn");
+
+      if (loggedIn !== "true") {
+        console.log("User not logged in ❌ Redirecting to login...");
+        router.push("/login"); // Redirect to login if not logged in
+      } else {
+        console.log("User is logged in ✅");
+        setLoading(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  if (loading) return <p>Checking login status...</p>;
 
   useEffect(() => {
     const storedValidToken = localStorage.getItem("validToken");
