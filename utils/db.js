@@ -1,30 +1,56 @@
-import { openDB } from "idb";
+export const setItem = async (key, value) => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("appDB", 1);
 
-export async function setToken(value, expiryMinutes = 5) {
-  const db = await openDB("myAppDB", 1, {
-    upgrade(db) {
-      db.createObjectStore("storage");
-    },
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains("storage")) {
+        db.createObjectStore("storage");
+      }
+    };
+
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+      const transaction = db.transaction("storage", "readwrite");
+      const store = transaction.objectStore("storage");
+      store.put(value, key);
+      resolve();
+    };
+
+    request.onerror = (event) => reject(event.target.error);
   });
+};
 
-  await db.put("storage", value, "validToken");
-  const expirationTime = Date.now() + expiryMinutes * 60 * 1000;
-  await db.put("storage", expirationTime.toString(), "validTokenExpiration");
-}
+export const getItem = async (key) => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("appDB", 1);
 
-export async function getToken() {
-  const db = await openDB("myAppDB", 1);
-  const storedToken = await db.get("storage", "validToken");
-  const expirationTime = await db.get("storage", "validTokenExpiration");
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+      const transaction = db.transaction("storage", "readonly");
+      const store = transaction.objectStore("storage");
+      const getRequest = store.get(key);
 
-  if (storedToken === "true" && expirationTime) {
-    if (Date.now() < parseInt(expirationTime)) {
-      return true;
-    } else {
-      await db.delete("storage", "validToken");
-      await db.delete("storage", "validTokenExpiration");
-      return false;
-    }
-  }
-  return false;
-}
+      getRequest.onsuccess = () => resolve(getRequest.result);
+      getRequest.onerror = () => reject(getRequest.error);
+    };
+
+    request.onerror = (event) => reject(event.target.error);
+  });
+};
+
+export const removeItem = async (key) => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("appDB", 1);
+
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+      const transaction = db.transaction("storage", "readwrite");
+      const store = transaction.objectStore("storage");
+      store.delete(key);
+      resolve();
+    };
+
+    request.onerror = (event) => reject(event.target.error);
+  });
+};
