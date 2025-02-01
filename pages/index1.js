@@ -38,12 +38,17 @@ export default function Home() {
   useEffect(() => {
     const checkLoginStatus = async () => {
       const loggedIn = await getItem("loggedIn");
+      const expiryTime = await getItem("expiryTime");
 
-      if (loggedIn !== "true") {
-        console.log("User not logged in ❌ Redirecting to login...");
-        router.push("/login"); // Redirect to login if not logged in
+      if (loggedIn !== "true" || !expiryTime || Date.now() > expiryTime) {
+        console.log("❌ Session expired! Redirecting...");
+
+        await removeItem("loggedIn");
+        await removeItem("expiryTime");
+
+        router.push("/login");
       } else {
-        console.log("User is logged in ✅");
+        console.log("✅ Session active!");
         setLoading(false);
       }
     };
@@ -51,7 +56,7 @@ export default function Home() {
     checkLoginStatus();
   }, []);
 
-  if (loading) return <p>Checking login status...</p>;
+  if (loading) return <p>Checking session...</p>;
 
   useEffect(() => {
     const storedValidToken = localStorage.getItem("validToken");
