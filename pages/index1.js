@@ -27,7 +27,8 @@ import { IoClose } from "react-icons/io5";
 import { BiSearch } from "react-icons/bi";
 import { FaHome, FaSearch, FaTv, FaPlay, FaBars } from "react-icons/fa";
 
-import { getItem, removeItem } from "@/utils/db";
+import { getItem, setItem, removeItem } from "@/utils/db"; 
+
 import Logout from "@/components/Logout";
 
 
