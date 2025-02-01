@@ -5,12 +5,12 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    const expiryTime = Date.now() + 5 * 60 * 1000; // 5 minutes
+    const expiryTime = Date.now() + 5 * 60 * 1000; // 5 minutes expiry
 
     await setItem("loggedIn", "true");
     await setItem("expiryTime", expiryTime);
 
-    console.log("Login successful ✅ Session valid for 5 mins");
+    console.log("✅ Login successful (Session expires in 5 mins)");
 
     router.push("/index1"); // Redirect to index1
   };
